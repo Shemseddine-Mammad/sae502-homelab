@@ -1,0 +1,39 @@
+---
+- name: Mettre a jour le cache apt
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Installer les paquets de base
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+
+- name: Definir le fuseau horaire
+  community.general.timezone:
+    name: "{{ common_timezone }}"
+
+- name: Creer le dossier de configuration de journald
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: "0755"
+
+- name: Limiter la taille des journaux systemd
+  ansible.builtin.copy:
+    dest: /etc/systemd/journald.conf.d/50-sae502.conf
+    content: |
+      # Gere par Ansible (role common)
+      [Journal]
+      SystemMaxUse={{ common_journald_max_use }}
+    mode: "0644"
+  notify: Redemarrer journald
+
+- name: Declarer les machines du lab dans /etc/hosts
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    marker: "# {mark} SAE502 - gere par Ansible"
+    block: |
+      {% for h in groups['all'] %}
+      {{ hostvars[h].ansible_host }} {{ h }}
+      {% endfor %}

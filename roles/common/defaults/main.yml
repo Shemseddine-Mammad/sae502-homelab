@@ -1,0 +1,12 @@
+---
+common_timezone: Europe/Paris
+common_journald_max_use: 500M
+common_packages:
+  - nano
+  - curl
+  - ca-certificates
+  - gnupg
+  - htop
+  - dnsutils
+  - iputils-ping
+  - rsync
